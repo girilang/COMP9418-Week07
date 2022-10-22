@@ -191,3 +191,28 @@ class Factor:
             table.append(row)
         header = list(self.domain) + ['Pr']
         return tabulate(table, headers=header, tablefmt='fancy_grid') + '\n'
+
+    def maximize(self, var, return_prev=False):
+        '''
+        Usage: f.maximize('B'), where 'B' is a variable name.
+        This function removes a variable from the domain, and maximizes over that variable in the table
+        The return_prev argument will be used when tracing back the viterbi algorithm
+        '''
+        
+        # create new domain
+        new_dom = list(self.domain)
+        new_dom.remove(var)
+        
+        # remove an axis of the table by taking a maximum over that axis
+        axis = self.domain.index(var)
+        new_table = np.max(self.table, axis=axis)
+        
+        # create a new factor to be returned
+        outputFactor = self.__class__(tuple(new_dom),self.outcomeSpace, new_table)
+
+        if return_prev:
+            # get the index chosen when taking maximum (to be used later in the viterbi algorithm)
+            prev = np.argmax(self.table, axis=axis)
+            return outputFactor, prev
+        else:
+            return outputFactor
